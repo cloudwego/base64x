@@ -27,3 +27,10 @@ native_amd64.s: ${NATIVE_SRC} ${NATIVE_ASM} native_amd64.go
 	python3 tools/asm2asm/asm2asm.py -r native_amd64.go output/native.s ${NATIVE_ASM}
 	awk '{gsub(/Text__native_entry__/, "text__native_entry__")}1' native_text_amd64.go > native_text_amd64.go.tmp && mv native_text_amd64.go.tmp native_text_amd64.go
 	awk '{gsub(/Funcs/, "funcs")}1' native_subr_amd64.go > native_subr_amd64.go.tmp && mv native_subr_amd64.go.tmp native_subr_amd64.go
+
+test:
+	go clean -testcache
+	GOARCH=arm64 go test ./...
+	echo 'arm64 passed'
+	GOARCH=amd64 go test ./...
+	echo 'amd64 passed'
