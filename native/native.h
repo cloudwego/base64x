@@ -4,7 +4,6 @@
 
 #define MODE_URL        1
 #define MODE_RAW        2
-#define MODE_AVX2       4
 #define MODE_JSON       8
 
 #define as_m32v(v)      (*(uint32_t *)(v))
@@ -24,11 +23,6 @@ struct slice_t {
     size_t len;
     size_t cap;
 };
-
-/** Exported Functions **/
-
-void    b64encode(struct slice_t *out, const struct slice_t *src, int mode);
-ssize_t b64decode(struct slice_t *out, const char *src, size_t nb, int mode);
 
 /** Encoder Helper Functions **/
 
@@ -75,7 +69,7 @@ static always_inline __m256i encode_avx2(__m128i v0, __m128i v1, const uint8_t *
 
 /** Function Implementations **/
 
-void b64encode(struct slice_t *out, const struct slice_t *src, int mode) {
+static always_inline void do_b64encode(struct slice_t *out, const struct slice_t *src, int mode) {
     char *          ob = out->buf + out->len;
     char *          op = out->buf + out->len;
     const char *    ip = src->buf;
@@ -96,7 +90,8 @@ void b64encode(struct slice_t *out, const struct slice_t *src, int mode) {
 
     /* SIMD 24 bytes loop, but the SIMD instruction will load 4 bytes
      * past the end, so it's safe only if there are 28 bytes or more left */
-    while ((ip <= ie - 28) && (mode & MODE_AVX2) != 0) {
+#ifdef USE_AVX2
+    while (ip <= ie - 28) {
         __m128i v0 = _mm_loadu_si128 (as_m128c(ip));
         __m128i v1 = _mm_loadu_si128 (as_m128c(ip + 12));
         __m256i vv = encode_avx2     (v0, v1, vt);
@@ -108,7 +103,7 @@ void b64encode(struct slice_t *out, const struct slice_t *src, int mode) {
     }
 
     /* can do one more 24 bytes round, but needs special handling */
-    if ((ip <= ie - 24) && (mode & MODE_AVX2) != 0) {
+    if (ip <= ie - 24) {
         __m128i v0 = _mm_loadu_si128 (as_m128c(ip));
         __m128i v1 = _mm_loadu_si128 (as_m128c(ip + 8));
         __m128i v2 = _mm_srli_si128  (v1, 4);
@@ -119,6 +114,7 @@ void b64encode(struct slice_t *out, const struct slice_t *src, int mode) {
         op += 32;
         ip += 24;
     }
+#endif
 
     /* no more bytes */
     if (ip == ie) {
@@ -423,7 +419,7 @@ error:
 
 }
 
-ssize_t b64decode(struct slice_t *out, const char *src, size_t nb, int mode) {
+static always_inline ssize_t do_b64decode(struct slice_t *out, const char *src, size_t nb, int mode) {
     int     ep;
     __m256i vv;
     int64_t dv;
@@ -452,12 +448,10 @@ ssize_t b64decode(struct slice_t *out, const char *src, size_t nb, int mode) {
         st = VecDecodeCharsetURL;
     }
 
+#ifdef USE_AVX2
     /* decode every 32 bytes, the final round should be handled separately, because the
      * SIMD instruction performs 32-byte store, and it might store past the end of the
      * output buffer */
-    if ((mode & MODE_AVX2) == 0) {
-        goto scalar;
-    }
     while ((ip <= ie - 32) && (op <= oe - 32)) {
         vv = _mm256_loadu_si256(as_m256c(ip));
         vv = decode_avx2(vv, &ep, dt);
@@ -477,6 +471,7 @@ ssize_t b64decode(struct slice_t *out, const char *src, size_t nb, int mode) {
         ip += 32;
         op += 24;
     }
+#endif
 
 scalar:
     /* handle the remaining bytes with scalar code (8 byte loop) */

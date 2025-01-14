@@ -17,13 +17,9 @@
 package base64x
 
 import (
-    `crypto/rand`
     `encoding/base64`
-    `io`
-    `reflect`
     `strings`
     `testing`
-    `unsafe`
 )
 
 type TestPair struct {
@@ -178,33 +174,6 @@ func testEqual(t *testing.T, msg string, args ...interface{}) bool {
     return true
 }
 
-func TestEncoderRecover(t *testing.T) {
-    t.Run("nil dst", func(t *testing.T) {
-        in := []byte("abc")
-        defer func(){
-            if v := recover(); v != nil {
-                println("recover:", v)
-            } else {
-                t.Fatal("not recover")
-            }
-        }()
-        b64encode(nil, &in, int(StdEncoding))
-    })
-    t.Run("nil src", func(t *testing.T) {
-        in := []byte("abc")
-        (*reflect.SliceHeader)(unsafe.Pointer(&in)).Data = uintptr(0)
-        out := make([]byte, 0, 10)
-        defer func(){
-            if v := recover(); v != nil {
-                println("recover:", v)
-            } else {
-                t.Fatal("not recover")
-            }
-        }()
-        b64encode(&out, &in, int(StdEncoding))
-    })
-}
-
 func TestEncoder(t *testing.T) {
     for _, p := range pairs {
         for _, tt := range encodingTests {
@@ -213,46 +182,6 @@ func TestEncoder(t *testing.T) {
         }
     }
 }
-
-func benchmarkStdlibWithSize(b *testing.B, nb int) {
-    buf := make([]byte, nb)
-    dst := make([]byte, base64.StdEncoding.EncodedLen(nb))
-    _, _ = io.ReadFull(rand.Reader, buf)
-    b.SetBytes(int64(nb))
-    b.ResetTimer()
-    b.RunParallel(func(pb *testing.PB) {
-        for pb.Next() {
-            base64.StdEncoding.Encode(dst, buf)
-        }
-    })
-}
-
-func benchmarkBase64xWithSize(b *testing.B, nb int) {
-    buf := make([]byte, nb)
-    dst := make([]byte, StdEncoding.EncodedLen(nb))
-    _, _ = io.ReadFull(rand.Reader, buf)
-    b.SetBytes(int64(nb))
-    b.ResetTimer()
-    b.RunParallel(func(pb *testing.PB) {
-        for pb.Next() {
-            StdEncoding.Encode(dst, buf)
-        }
-    })
-}
-
-func BenchmarkEncoderStdlib_16B    (b *testing.B) { benchmarkStdlibWithSize(b, 16) }
-func BenchmarkEncoderStdlib_56B    (b *testing.B) { benchmarkStdlibWithSize(b, 56) }
-func BenchmarkEncoderStdlib_128B   (b *testing.B) { benchmarkStdlibWithSize(b, 128) }
-func BenchmarkEncoderStdlib_4kB    (b *testing.B) { benchmarkStdlibWithSize(b, 4 * 1024) }
-func BenchmarkEncoderStdlib_256kB  (b *testing.B) { benchmarkStdlibWithSize(b, 256 * 1024) }
-func BenchmarkEncoderStdlib_1MB    (b *testing.B) { benchmarkStdlibWithSize(b, 1024 * 1024) }
-
-func BenchmarkEncoderBase64x_16B   (b *testing.B) { benchmarkBase64xWithSize(b, 16) }
-func BenchmarkEncoderBase64x_56B   (b *testing.B) { benchmarkBase64xWithSize(b, 56) }
-func BenchmarkEncoderBase64x_128B  (b *testing.B) { benchmarkBase64xWithSize(b, 128) }
-func BenchmarkEncoderBase64x_4kB   (b *testing.B) { benchmarkBase64xWithSize(b, 4 * 1024) }
-func BenchmarkEncoderBase64x_256kB (b *testing.B) { benchmarkBase64xWithSize(b, 256 * 1024) }
-func BenchmarkEncoderBase64x_1MB   (b *testing.B) { benchmarkBase64xWithSize(b, 1024 * 1024) }
 
 func TestDecoder(t *testing.T) {
     for _, p := range pairs {
@@ -271,30 +200,6 @@ func TestDecoder(t *testing.T) {
     }
 }
 
-func TestDecoderRecover(t *testing.T) {
-    t.Run("nil dst", func(t *testing.T) {
-        in := []byte("abc")
-        defer func(){
-            if v := recover(); v != nil {
-                println("recover:", v)
-            } else {
-                t.Fatal("not recover")
-            }
-        }()
-        b64decode(nil, unsafe.Pointer(&in[0]), len(in), int(StdEncoding))
-    })
-    t.Run("nil src", func(t *testing.T) {
-        out := make([]byte, 0, 10)
-        defer func(){
-            if v := recover(); v != nil {
-                println("recover:", v)
-            } else {
-                t.Fatal("not recover")
-            }
-        }()
-        b64decode(&out, nil, 5, int(StdEncoding))
-    })
-}
 
 func TestDecoderCRLF(t *testing.T) {
     for _, p := range crlf_pairs {
@@ -350,31 +255,3 @@ func TestDecoderError(t *testing.T) {
         panic(err)
     } 
 }
-
-func benchmarkStdlibDecoder(b *testing.B, v string) {
-    src := []byte(v)
-    dst := make([]byte, base64.StdEncoding.DecodedLen(len(v)))
-    b.SetBytes(int64(len(v)))
-    b.ResetTimer()
-    b.RunParallel(func(pb *testing.PB) {
-        for pb.Next() {
-            _, _ = base64.StdEncoding.Decode(dst, src)
-        }
-    })
-}
-
-func benchmarkBase64xDecoder(b *testing.B, v string) {
-    src := []byte(v)
-    dst := make([]byte, StdEncoding.DecodedLen(len(v)))
-    b.SetBytes(int64(len(v)))
-    b.ResetTimer()
-    b.RunParallel(func(pb *testing.PB) {
-        for pb.Next() {
-            _, _ = StdEncoding.Decode(dst, src)
-        }
-    })
-}
-
-var data = `////////////////////////////////////////////////////////////////`
-func BenchmarkDecoderStdLib  (b *testing.B) { benchmarkStdlibDecoder(b, data) }
-func BenchmarkDecoderBase64x (b *testing.B) { benchmarkBase64xDecoder(b, data) }
