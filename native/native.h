@@ -90,7 +90,7 @@ static always_inline void do_b64encode(struct slice_t *out, const struct slice_t
 
     /* SIMD 24 bytes loop, but the SIMD instruction will load 4 bytes
      * past the end, so it's safe only if there are 28 bytes or more left */
-#ifdef USE_AVX2
+#ifdef __AVX2__
     while (ip <= ie - 28) {
         __m128i v0 = _mm_loadu_si128 (as_m128c(ip));
         __m128i v1 = _mm_loadu_si128 (as_m128c(ip + 12));
