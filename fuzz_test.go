@@ -1,3 +1,5 @@
+// +build go1.18
+
 /*
  * Copyright 2024 CloudWeGo Authors
  *

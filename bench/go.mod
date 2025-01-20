@@ -1,6 +1,6 @@
 module bench
 
-go 1.16
+go 1.17
 
 require (
 	github.com/cloudwego/base64x v0.1.4
