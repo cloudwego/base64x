@@ -8,13 +8,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # - name: Check License Header
-      #   uses: apache/skywalking-eyes/header@v0.4.0
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check License Header
+        uses: apache/skywalking-eyes/header@v0.4.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      #- name: Check Spell
-      #  uses: crate-ci/typos@master
+      - name: Check Spell
+       uses: crate-ci/typos@master
 
   staticcheck:
     runs-on: [ self-hosted, X64 ]

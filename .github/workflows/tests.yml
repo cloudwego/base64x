@@ -6,7 +6,7 @@ jobs:
   unit-benchmark-test:
     strategy:
       matrix:
-        go: [ "1.18", "1.19", "1.20" ]
+        go: [1.16.x, 1.17.x, 1.18.x, 1.19.x, 1.20.x, 1.21.x, 1.22.x, 1.23.x]
         os: [ X64 ]
     runs-on: ${{ matrix.os }}
     steps:
@@ -21,4 +21,4 @@ jobs:
         run: go test -race -covermode=atomic -coverprofile=coverage.out ./...
 
       - name: Benchmark
-        run: go test -bench=. -benchmem -run=none ./...
+        run: cd ./bench && go test -bench=. -benchmem -run=none ./...
