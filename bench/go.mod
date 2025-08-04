@@ -8,7 +8,7 @@ require (
 )
 
 require (
-	github.com/bytedance/sonic/loader v0.2.3 // indirect
+	github.com/bytedance/sonic/loader v0.3.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.9 // indirect
 	github.com/stretchr/testify v1.10.0 // indirect
 	golang.org/x/sys v0.22.0 // indirect
