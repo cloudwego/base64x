@@ -242,7 +242,7 @@ func TestDecoderError(t *testing.T) {
 		panic(err)
 	}
 	_, err = StdEncoding.DecodeString("123456")
-	if err != base64.CorruptInputError(6) {
+	if err != missingPaddingDecodeError() {
 		panic(err)
 	}
 	_, err = StdEncoding.DecodeString("1234;6")

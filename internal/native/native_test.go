@@ -1,3 +1,6 @@
+//go:build amd64 && !noasm && !appengine
+// +build amd64,!noasm,!appengine
+
 /*
  * Copyright 2025 CloudWeGo Authors
  *

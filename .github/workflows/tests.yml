@@ -7,13 +7,12 @@ jobs:
     strategy:
       matrix:
         go: [ 1.17.x, 1.18.x, 1.19.x, 1.20.x, 1.21.x, 1.22.x, 1.23.x]
-        os: [ X64 ]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
 
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ matrix.go }}
 
@@ -22,3 +21,41 @@ jobs:
 
       - name: Benchmark
         run: cd ./bench && go test -bench=. -benchmem -run=none ./...
+
+  fallback-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: ubuntu-x86 noasm
+            go: 1.20.x
+            os: ubuntu-24.04
+            command: go test -tags noasm .
+          - name: ubuntu-x86 appengine
+            go: 1.20.x
+            os: ubuntu-24.04
+            command: go test -tags appengine .
+          - name: macos arm64
+            go: 1.20.x
+            os: macos-14
+            command: go test .
+          - name: ubuntu arm64
+            go: 1.20.x
+            os: ubuntu-24.04-arm
+            command: go test .
+          - name: riscv64 compile
+            go: 1.20.x
+            os: ubuntu-24.04
+            command: GOOS=linux GOARCH=riscv64 CGO_ENABLED=0 go test -run '^$' -exec=/usr/bin/true .
+    name: Fallback Test (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Test fallback path
+        run: ${{ matrix.command }}
