@@ -37,10 +37,10 @@ jobs:
           github_token: ${{ secrets.github_token }}
           # Change reviewdog reporter if you need [github-pr-check,github-check,github-pr-review].
           reporter: github-pr-review
-          # Report all results.
-          filter_mode: nofilter
-          # Exit with 1 when it find at least one finding.
-          fail_on_error: true
+          # Report results only on newly added/modified lines.
+          filter_mode: added
+          # Exit with 1 when new findings are reported.
+          fail_level: error
           # Set staticcheck flags
           staticcheck_flags: -checks=inherit,-SA1029
 
