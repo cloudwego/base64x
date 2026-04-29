@@ -1,3 +1,6 @@
+//go:build amd64 && !noasm && !appengine
+// +build amd64,!noasm,!appengine
+
 /*
  * Copyright 2025 CloudWeGo Authors
  *
@@ -17,60 +20,59 @@
 package native
 
 import (
-	`reflect`
-	`testing`
-	`unsafe`
+	"reflect"
+	"testing"
+	"unsafe"
 )
 
 func TestEncoderRecover(t *testing.T) {
-    t.Run("nil dst", func(t *testing.T) {
-        in := []byte("abc")
-        defer func(){
-            if v := recover(); v != nil {
-                println("recover:", v)
-            } else {
-                t.Fatal("not recover")
-            }
-        }()
-        B64Encode(nil, &in, 0)
-    })
-    t.Run("nil src", func(t *testing.T) {
-        in := []byte("abc")
-        (*reflect.SliceHeader)(unsafe.Pointer(&in)).Data = uintptr(0)
-        out := make([]byte, 0, 10)
-        defer func(){
-            if v := recover(); v != nil {
-                println("recover:", v)
-            } else {
-                t.Fatal("not recover")
-            }
-        }()
-        B64Encode(&out, &in, 0)
-    })
+	t.Run("nil dst", func(t *testing.T) {
+		in := []byte("abc")
+		defer func() {
+			if v := recover(); v != nil {
+				println("recover:", v)
+			} else {
+				t.Fatal("not recover")
+			}
+		}()
+		B64Encode(nil, &in, 0)
+	})
+	t.Run("nil src", func(t *testing.T) {
+		in := []byte("abc")
+		(*reflect.SliceHeader)(unsafe.Pointer(&in)).Data = uintptr(0)
+		out := make([]byte, 0, 10)
+		defer func() {
+			if v := recover(); v != nil {
+				println("recover:", v)
+			} else {
+				t.Fatal("not recover")
+			}
+		}()
+		B64Encode(&out, &in, 0)
+	})
 }
 
-
 func TestDecoderRecover(t *testing.T) {
-    t.Run("nil dst", func(t *testing.T) {
-        in := []byte("abc")
-        defer func(){
-            if v := recover(); v != nil {
-                println("recover:", v)
-            } else {
-                t.Fatal("not recover")
-            }
-        }()
-        B64Decode(nil, unsafe.Pointer(&in[0]), len(in), 0)
-    })
-    t.Run("nil src", func(t *testing.T) {
-        out := make([]byte, 0, 10)
-        defer func(){
-            if v := recover(); v != nil {
-                println("recover:", v)
-            } else {
-                t.Fatal("not recover")
-            }
-        }()
-        B64Decode(&out, nil, 5, 0)
-    })
+	t.Run("nil dst", func(t *testing.T) {
+		in := []byte("abc")
+		defer func() {
+			if v := recover(); v != nil {
+				println("recover:", v)
+			} else {
+				t.Fatal("not recover")
+			}
+		}()
+		B64Decode(nil, unsafe.Pointer(&in[0]), len(in), 0)
+	})
+	t.Run("nil src", func(t *testing.T) {
+		out := make([]byte, 0, 10)
+		defer func() {
+			if v := recover(); v != nil {
+				println("recover:", v)
+			} else {
+				t.Fatal("not recover")
+			}
+		}()
+		B64Decode(&out, nil, 5, 0)
+	})
 }

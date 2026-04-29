@@ -17,8 +17,9 @@
 
 package base64x
 
-// HACK: maintain these only to prevent breakchange, because sonic-go linkname these
-var (
-	_subr__b64decode uintptr
-	_subr__b64encode uintptr
-)
+import "testing"
+
+func TestSubrCompatibilitySymbols(t *testing.T) {
+	_ = _subr__b64decode
+	_ = _subr__b64encode
+}

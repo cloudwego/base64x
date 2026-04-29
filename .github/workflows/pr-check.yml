@@ -4,9 +4,9 @@ on: [ pull_request ]
 
 jobs:
   compliant:
-    runs-on: [ self-hosted, X64 ]
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
 
       - name: Check License Header
         uses: apache/skywalking-eyes/header@v0.4.0
@@ -14,18 +14,18 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check Spell
-       uses: crate-ci/typos@master
+        uses: crate-ci/typos@master
 
   staticcheck:
-    runs-on: [ self-hosted, X64 ]
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v6
         with:
-          go-version: 1.20
+          go-version: "1.20.x"
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: ~/go/pkg/mod
           key: reviewdog-${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
@@ -46,13 +46,13 @@ jobs:
 
   # not ready: unknown issue related to the env, skip for now
   # lint:
-  #   runs-on: [ self-hosted, X64 ]
+  #   runs-on: ubuntu-24.04
   #   steps:
-  #     - uses: actions/checkout@v3
+  #     - uses: actions/checkout@v6
   #     - name: Set up Go
-  #       uses: actions/setup-go@v3
+  #       uses: actions/setup-go@v6
   #       with:
-  #         go-version: 1.20
+  #         go-version: "1.20.x"
 
   #     - name: Golangci Lint
   #       # https://golangci-lint.run/

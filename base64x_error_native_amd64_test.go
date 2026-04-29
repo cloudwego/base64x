@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//go:build amd64
-// +build amd64
+//go:build amd64 && !noasm && !appengine
+// +build amd64,!noasm,!appengine
 
 package base64x
 
-// HACK: maintain these only to prevent breakchange, because sonic-go linkname these
-var (
-	_subr__b64decode uintptr
-	_subr__b64encode uintptr
-)
+import "encoding/base64"
+
+func missingPaddingDecodeError() base64.CorruptInputError {
+	return base64.CorruptInputError(6)
+}
