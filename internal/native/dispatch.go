@@ -75,6 +75,6 @@ func init() {
 	} else if hasSSE {
 		useSSE()
 	} else {
-		panic("Unsupported CPU, lacks of AVX2 or SSE CPUID Flag. maybe it's too old to run Sonic.")
+		panic("Unsupported CPU, lacks AVX2 or SSE CPUID Flag. maybe it's too old to run Sonic.")
 	}
 }
